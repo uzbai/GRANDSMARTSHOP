@@ -1,11 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="uz">
 <head>
-  <title>Nasiyalar</title>
+  <meta charset="UTF-8" />
+  <title>Nasiyalar ro'yxati</title>
+  <script src="data.js" defer></script>
+  <script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("nasiyalar");
+      nasiyalar.forEach(shaxs => {
+        let umumiy = 0;
+        const div = document.createElement("div");
+        div.innerHTML = `<h3>${shaxs.ism}</h3>`;
+        shaxs.tarix.forEach(harakat => {
+          if (harakat.tur === "olindi") umumiy += harakat.summa;
+          else umumiy -= harakat.summa;
+          div.innerHTML += `<p>${harakat.sana} - ${harakat.tur} - ${harakat.summa.toLocaleString()} so'm</p>`;
+        });
+        div.innerHTML += `<strong>Qoldiq: ${umumiy.toLocaleString()} so'm</strong>`;
+        div.style.marginBottom = "20px";
+        container.appendChild(div);
+      });
+    });
+  </script>
 </head>
 <body>
   <h1>Nasiyalar ro'yxati</h1>
-  <p>Bu yerda qarzdorlar va oldi-berdi tarixlari ko‘rsatiladi.</p>
+  <div id="nasiyalar"></div>
+  <br>
   <a href="index.html">🏠 Bosh sahifa</a>
 </body>
 </html>
