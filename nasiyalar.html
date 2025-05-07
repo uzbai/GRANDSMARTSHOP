@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grand Smart Shop - Nasiyalar</title>
+  <title>Nasiyalar – Grand Smart Shop</title>
   <style>
     body {
       font-family: sans-serif;
@@ -11,109 +11,124 @@
       margin: 0;
       padding: 1rem;
       max-width: 600px;
-      margin: auto;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    nav {
+      margin-bottom: 1rem;
+    }
+    nav a {
+      text-decoration: none;
+      color: #007bff;
+      font-size: 0.9rem;
     }
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    #totalSum {
+      font-weight: bold;
+      font-size: 1.1rem;
       text-align: center;
       margin-bottom: 1rem;
     }
-    .nasiyalar-header {
-      font-weight: bold;
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-    }
     .nasiya {
-      background: white;
-      border-radius: 10px;
-      padding: 0.7rem;
-      margin-bottom: 0.5rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin-bottom: 0.6rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .nasiya-header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       cursor: pointer;
       font-weight: bold;
     }
     .tarix {
-      margin-top: 0.5rem;
+      margin-top: 0.6rem;
       display: none;
       font-size: 0.95rem;
+      padding-left: 0.5rem;
+      border-left: 2px solid #ddd;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 0.6rem;
+      }
+      .nasiya {
+        padding: 0.6rem;
+      }
+      h1 {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>Grand Smart Shop</h1>
-  <div class="nasiyalar-header" id="totalSum">Nasiyalar: hisoblanmoqda...</div>
+  <nav><a href="index.html">◀ Bosh sahifa</a></nav>
+  <h1>Nasiyalar</h1>
+  <div id="totalSum">Nasiyalar: hisoblanmoqda...</div>
   <div id="nasiyaList"></div>
 
+  <script src="data.js"></script>
   <script>
-    const nasiyalar = [
-      {
-        ism: "Xusanboy aka",
-        tarix: [
-          "01.05.2025 13:30 - 300 000 so'm",
-          "02.05.2025 10:30 - 6 464 000 so'm pul o'tdi",
-          "02.05.2025 19:00 - 3 232 000 so'm pul berdi"
-        ],
-        qoldiq: 3532000
-      },
-      {
-        ism: "Alisher",
-        tarix: [
-          "01.05.2025 08:00 - 2 000 000 so'm",
-          "01.05.2025 10:30 - 3 232 000 so'm pul o'tdi",
-          "02.05.2025 19:00 - 5 000 000 so'm pul berdi"
-        ],
-        qoldiq: 232000
-      }
-    ];
-
+    // Formatlash funksiyasi
     function formatSum(sum) {
       return sum.toLocaleString("uz-UZ") + " so'm";
     }
 
+    // Sahifada ro'yxatni chizish
     function renderNasiyaList() {
-      const list = document.getElementById("nasiyaList");
-      list.innerHTML = "";
+      const listEl = document.getElementById("nasiyaList");
+      listEl.innerHTML = "";
       let total = 0;
 
-      nasiyalar.forEach((item) => {
-        total += item.qoldiq;
+      nasiyalar.forEach(item => {
+        // Qoldiqni hisoblash
+        let qoldiq = 0;
+        item.tarix.forEach(t => {
+          if (t.tur === "olindi") qoldiq += t.summa;
+          else if (t.tur === "berdi") qoldiq -= t.summa;
+        });
+        total += qoldiq;
 
-        const el = document.createElement("div");
-        el.className = "nasiya";
+        // Element yaratish
+        const wrapper = document.createElement("div");
+        wrapper.className = "nasiya";
 
         const header = document.createElement("div");
         header.className = "nasiya-header";
-        header.textContent = `${item.ism} - ${formatSum(item.qoldiq)}`;
+        header.textContent = `${item.ism} – ${formatSum(qoldiq)}`;
 
-        const tarix = document.createElement("div");
-        tarix.className = "tarix";
-
+        const details = document.createElement("div");
+        details.className = "tarix";
         item.tarix
-          .filter(t => !(t.includes("pul berdi") && t.includes("0 so'm")))
+          .filter(t => !(t.tur === "berdi" && t.summa === 0))
           .forEach(t => {
             const p = document.createElement("div");
-            p.textContent = t;
-            tarix.appendChild(p);
+            p.textContent = `${t.sana} – ${t.tur} – ${formatSum(t.summa)}`;
+            details.appendChild(p);
           });
 
+        // Bitta bosishda ochish/berkitish
         header.addEventListener("click", () => {
-          tarix.style.display = tarix.style.display === "block" ? "none" : "block";
+          details.style.display = details.style.display === "block" ? "none" : "block";
         });
 
-        el.appendChild(header);
-        el.appendChild(tarix);
-        list.appendChild(el);
+        wrapper.appendChild(header);
+        wrapper.appendChild(details);
+        listEl.appendChild(wrapper);
       });
 
       document.getElementById("totalSum").textContent = `Nasiyalar: ${formatSum(total)}`;
     }
 
-    renderNasiyaList();
+    // Sahifa yuklandida render
+    window.addEventListener("DOMContentLoaded", renderNasiyaList);
   </script>
 </body>
 </html>
