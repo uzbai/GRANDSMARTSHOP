@@ -11,32 +11,39 @@
       margin: 0;
       padding: 1rem;
       max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: auto;
     }
     nav { margin-bottom: 1rem; }
     nav a { text-decoration: none; color: #007bff; font-size: 0.9rem; }
     h1 { font-size: 1.4rem; text-align: center; margin-bottom: 0.5rem; }
     #totalSum { font-weight: bold; font-size: 1.1rem; text-align: center; margin-bottom: 1rem; }
     .nasiya {
-      background: #fff; border-radius: 8px; padding: 0.8rem;
-      margin-bottom: 0.6rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin-bottom: 0.6rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .nasiya-header {
-      display: flex; justify-content: space-between;
-      align-items: center; cursor: pointer; font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
     }
     .tarix {
-      margin-top: 0.6rem; display: none; font-size: 0.95rem;
-      padding-left: 0.5rem; border-left: 2px solid #ddd;
+      margin-top: 0.6rem;
+      display: none;
+      font-size: 0.95rem;
+      padding-left: 0.5rem;
+      border-left: 2px solid #ddd;
     }
     .input-group { margin-bottom: 0.8rem; }
     .input-group label { display: block; margin-bottom: 0.3rem; }
     .input-group input,
     .input-group textarea,
     .input-group select {
-      width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:5px;
-      box-sizing:border-box;
+      width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:5px; box-sizing:border-box;
     }
     button {
       cursor:pointer; padding:0.5rem 1rem; border:none; border-radius:5px;
@@ -109,21 +116,15 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyMlhXOrF_JiY1SDC-v5TIlEsV5R3AeUkcxUrc4wlUsFrC7GVzDdVOa5vxDEQqaXinafA/exec";
-
-    // Data struktura
     let nasiyalarData = [];
 
-    // Foiz uchun formatlash
     function formatSum(sum) {
       return sum.toLocaleString("uz-UZ") + " so'm";
     }
 
-    // APIdan ma'lumot yuklash
     async function loadNasiyalar() {
       const res = await fetch(API_URL);
       const raw = await res.json();
-      // raw: array of {id, ism, sana, tur, summa, izoh}
-      // Grouplash by ism
       const map = {};
       raw.forEach(r => {
         if (!map[r.ism]) map[r.ism] = [];
@@ -141,14 +142,12 @@
       renderNasiyaList();
     }
 
-    // Ro'yxatni chizish
     function renderNasiyaList() {
       const listEl = document.getElementById("nasiyaList");
       listEl.innerHTML = "";
       let total = 0;
 
       nasiyalarData.forEach(item => {
-        // Qoldiqni hisoblash
         let qoldiq = 0;
         item.tarix.forEach(t => {
           if (t.tur === "oldi") qoldiq += t.summa;
@@ -156,7 +155,6 @@
         });
         total += qoldiq;
 
-        // Elementlar yarating
         const wrapper = document.createElement("div");
         wrapper.className = "nasiya";
 
@@ -175,8 +173,7 @@
           });
 
         header.addEventListener("click", () => {
-          details.style.display =
-            details.style.display === "block" ? "none" : "block";
+          details.style.display = details.style.display === "block" ? "none" : "block";
         });
 
         wrapper.appendChild(header);
@@ -184,11 +181,9 @@
         listEl.appendChild(wrapper);
       });
 
-      document.getElementById("totalSum").textContent =
-        `Nasiyalar: ${formatSum(total)}`;
+      document.getElementById("totalSum").textContent = `Nasiyalar: ${formatSum(total)}`;
     }
 
-    // Modal & form
     const addBtn = document.getElementById("addNasiyaBtn");
     const modal = document.getElementById("nasiyaModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
@@ -199,6 +194,12 @@
 
     form.addEventListener("submit", async e => {
       e.preventDefault();
+
+      // 1) Modalni oldin yopamiz va tugmani bloklaymiz
+      modal.style.display = "none";
+      addBtn.disabled = true;
+
+      // 2) Form ma'lumotlari
       const ism   = document.getElementById("formIsm").value.trim();
       const oldi  = parseFloat(document.getElementById("formOldi").value)  || 0;
       const berdi = parseFloat(document.getElementById("formBerdi").value) || 0;
@@ -206,27 +207,33 @@
       const izoh  = document.getElementById("formIzoh").value.trim();
       const sana  = new Date().toLocaleString("uz-UZ", { hour12: false });
 
-      // Qo'shish uchun POST
+      const headers = { 'Content-Type': 'application/json' };
+
+      // 3) Yazuvlarni jo'natish
       if (oldi > 0) {
         const adj = oldi + oldi * foiz / 100;
         await fetch(API_URL, {
           method: "POST",
+          headers,
           body: JSON.stringify({ ism, sana, tur: "oldi", summa: adj, izoh })
         });
       }
       if (berdi > 0) {
         await fetch(API_URL, {
           method: "POST",
+          headers,
           body: JSON.stringify({ ism, sana, tur: "berdi", summa: berdi, izoh })
         });
       }
 
-      modal.style.display = "none";
-      form.reset();
+      // 4) Ro'yxatni yangilaymiz
       await loadNasiyalar();
+
+      // 5) Tugmani faollik va formni tozalash
+      addBtn.disabled = false;
+      form.reset();
     });
 
-    // Boshlanishda
     window.addEventListener("DOMContentLoaded", loadNasiyalar);
   </script>
 </body>
