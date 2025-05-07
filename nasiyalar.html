@@ -15,11 +15,20 @@ function renderNasiyaList() {
 
     const tarix = document.createElement("div");
     tarix.className = "tarix";
-    tarix.innerHTML = item.tarix
-      .filter(x => !x.includes("pul berdi") || !x.includes("0 so'm"))
-      .map(x => `<div>${x}</div>`).join("");
 
-    // ❗️Event listener orqali bitta bosishda ochiladi
+    // Filtrlash: 0 so'mli "pul berdi" yozuvlarini ko‘rsatmaymiz
+    const filteredTarix = item.tarix.filter(x => {
+      return !(x.includes("pul berdi") && x.includes("0 so'm"));
+    });
+
+    // Tarixni to‘g‘ri formatda HTML qilib chiqaramiz
+    filteredTarix.forEach(t => {
+      const p = document.createElement("div");
+      p.textContent = t;
+      tarix.appendChild(p);
+    });
+
+    // Endi event listener: bitta marta bosish bilan ochiladi
     header.addEventListener("click", () => {
       tarix.style.display = tarix.style.display === "block" ? "none" : "block";
     });
