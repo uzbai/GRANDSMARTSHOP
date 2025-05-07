@@ -72,6 +72,54 @@
   <nav><a href="index.html">◀ Bosh sahifa</a></nav>
   <h1>Nasiyalar</h1>
   <div id="totalSum">Nasiyalar: hisoblanmoqda...</div>
+  // nasiya qo'shish
+
+<!-- Nasiya qo'shish tugmasi -->
+<div class="input-group">
+  <button id="addNasiyaBtn">➕ Nasiya qo‘shish</button>
+</div>
+
+<!-- Modal / Pop-up oynasi -->
+<div id="nasiyaModal" class="modal" style="display:none; position:fixed; top:0; left:0;
+     width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div class="modal-content" style="background:#fff; padding:1rem; border-radius:8px; width:90%; max-width:400px;">
+    <h2>Nasiya qo‘shish</h2>
+    <form id="nasiyaForm">
+      <div class="input-group">
+        <label>Ismi</label>
+        <input type="text" id="formIsm" required />
+      </div>
+      <div class="input-group">
+        <label>Oldi (pul oldi)</label>
+        <input type="number" id="formOldi" value="0" />
+      </div>
+      <div class="input-group">
+        <label>Berdi (pul berdi)</label>
+        <input type="number" id="formBerdi" value="0" />
+      </div>
+      <div class="input-group">
+        <label>Foiz</label>
+        <select id="formFoiz">
+          <option value="0">0%</option>
+          <option value="0.5">0.5%</option>
+          <option value="1">1%</option>
+          <option value="1.5">1.5%</option>
+          <option value="2">2%</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Izoh</label>
+        <textarea id="formIzoh"></textarea>
+      </div>
+      <div style="text-align:right;">
+        <button type="button" id="closeModalBtn">Bekor qilish</button>
+        <button type="submit">Saqlash</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  
   <div id="nasiyaList"></div>
 
   <script src="data.js"></script>
@@ -129,6 +177,62 @@
 
     // Sahifa yuklandida render
     window.addEventListener("DOMContentLoaded", renderNasiyaList);
+    // nasiya qo'shish skript
+
+// Elementlarni oling
+const addBtn = document.getElementById('addNasiyaBtn');
+const modal = document.getElementById('nasiyaModal');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const form = document.getElementById('nasiyaForm');
+
+// Modalni ochish
+addBtn.addEventListener('click', () => {
+  modal.style.display = 'flex';
+});
+
+// Modalni yopish
+closeModalBtn.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
+
+// Form submit
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  // Formdan qiymatlarni oling
+  const ism   = document.getElementById('formIsm').value.trim();
+  const oldi  = parseFloat(document.getElementById('formOldi').value)  || 0;
+  const berdi = parseFloat(document.getElementById('formBerdi').value) || 0;
+  const foiz  = parseFloat(document.getElementById('formFoiz').value)  || 0;
+  const izoh  = document.getElementById('formIzoh').value.trim();
+  const sana  = new Date().toLocaleString('uz-UZ', {hour12: false});
+
+  // Foizni hisoblash (faqat oldi uchun)
+  const adjustedOldi = oldi + oldi * foiz / 100;
+
+  // Qidiramiz, mavjud mijoz bormi
+  let mijoz = nasiyalar.find(n => n.ism === ism);
+  if (!mijoz) {
+    mijoz = { ism, tarix: [], qoldiq: 0 };
+    nasiyalar.push(mijoz);
+  }
+
+  // Tarixga yozamiz
+  if (oldi > 0) {
+    mijoz.tarix.push({ sana, tur: 'oldi', summa: adjustedOldi, izoh });
+  }
+  if (berdi > 0) {
+    mijoz.tarix.push({ sana, tur: 'berdi', summa: berdi, izoh });
+  }
+
+  // Sahifani yangidan chizish
+  renderNasiyaList();
+
+  // Modalni yopish va formni tozalash
+  modal.style.display = 'none';
+  form.reset();
+});
+
+    
   </script>
 </body>
 </html>
