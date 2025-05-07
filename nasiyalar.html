@@ -1,64 +1,361 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nasiyalar – Grand Smart Shop</title>
-  <style>
-    /* ... (styles as in previous version) ... */
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nasiyalar ro'yxati</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+        #add-form {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #add-form label {
+            display: inline-block;
+            width: 120px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        #add-form input, #add-form textarea, #add-form select {
+            width: calc(100% - 130px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #add-form textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .form-actions {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .form-actions button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+        .error {
+            color: #f44336;
+            margin-top: 10px;
+        }
+        .success {
+            color: #4CAF50;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .add-btn {
+                margin-top: 10px;
+                width: 100%;
+            }
+            #add-form input, #add-form textarea, #add-form select {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
-<body role="main">
-
-  <nav><a href="index.html">◀ Bosh sahifa</a></nav>
-  <h1>Nasiyalar</h1>
-  <div id="totalSum">Nasiyalar: yuklanmoqda...</div>
-  <div id="errorMsg" style="color:#b00; text-align:center; display:none"></div>
-  <div id="loading" style="text-align:center; display:none">Yuklanmoqda...</div>
-
-  <div style="text-align:center; margin:1rem 0;">
-    <button id="addNasiyaBtn">➕ Nasiya qo‘shish</button>
-  </div>
-
-  <div id="nasiyaList"></div>
-
-  <!-- Modal -->
-  <div id="nasiyaModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-    <div style="background:#fff; padding:1rem; border-radius:8px; width:90%; max-width:400px;">
-      <h2>Nasiya qo‘shish</h2>
-      <form id="nasiyaForm">
-        <!-- form fields: ism, oldi, berdi, foiz, izoh -->
-        <!-- as per previous version with min=0 validation -->
-      </form>
-      <button id="closeModalBtn">Bekor qilish</button>
+<body>
+    <div class="header">
+        <h1>Nasiyalar ro'yxati</h1>
+        <button class="add-btn" onclick="openAddForm()">
+            <i class="fas fa-plus"></i> Yangi nasiya qo'shish
+        </button>
     </div>
-  </div>
+    
+    <div id="loans-table" class="loading">
+        Ma'lumotlar yuklanmoqda...
+    </div>
 
-  <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxMgC8ce1FbV0UjXU6TSlNcRTYyfq3MzQsvqSfGFt-USbn6LeuAWEAHWpmeV3TQgsvrWA/exec";
-  function showLoading(show) { document.getElementById('loading').style.display = show ? '' : 'none'; }
-  function showError(msg) { const e = document.getElementById('errorMsg'); e.textContent = msg; e.style.display = msg? 'block':'none'; }
+    <div id="add-form">
+        <h2>Yangi nasiya qo'shish</h2>
+        <form id="loan-form">
+            <label for="ism">Mijoz Ismi:</label>
+            <input type="text" id="ism" name="ism" required placeholder="Mijozning to'liq ismi"><br>
+            
+            <label for="sana">Sana:</label>
+            <input type="date" id="sana" name="sana" required><br>
+            
+            <label for="tur">Nasiya turi:</label>
+            <select id="tur" name="tur" required>
+                <option value="">Tanlang</option>
+                <option value="Mahsulot">Mahsulot</option>
+                <option value="Xizmat">Xizmat</option>
+                <option value="Qarz">Qarz</option>
+                <option value="Boshqa">Boshqa</option>
+            </select><br>
+            
+            <label for="summa">Summa (so'm):</label>
+            <input type="number" id="summa" name="summa" required placeholder="0000000"><br>
+            
+            <label for="izoh">Qo'shimcha izoh:</label>
+            <textarea id="izoh" name="izoh" placeholder="Qo'shimcha ma'lumotlar..."></textarea><br>
+            
+            <div class="form-actions">
+                <button type="button" class="cancel-btn" onclick="closeAddForm()">Bekor qilish</button>
+                <button type="submit" class="save-btn">Saqlash</button>
+            </div>
+        </form>
+        <div id="form-message"></div>
+    </div>
 
-  function parseDate(s) { /* parse dd.MM.yyyy HH:mm */ }
-  function formatSum(n) { return n.toLocaleString('uz-UZ') + " so'm"; }
-
-  async function loadNasiyalar() {
-    showLoading(true); showError('');
-    try {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      // group by ism, parse summa, sort by date
-      // then render and pager
-    } catch (err) {
-      showError('Yuklashda xato');
-    } finally {
-      showLoading(false);
-    }
-  }
-
-  // renderNasiyaList, renderPager, modal/form logic, fetch POST with headers, try/finally to re-enable button
-  
-  window.addEventListener('DOMContentLoaded', loadNasiyalar);
-  </script>
+    <script>
+        // Web App URL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxMgC8ce1FbV0UjXU6TSlNcRTYyfq3MzQsvqSfGFt-USbn6LeuAWEAHWpmeV3TQgsvrWA/exec';
+        
+        // DOM elementlari
+        const loansTable = document.getElementById('loans-table');
+        const addForm = document.getElementById('add-form');
+        const loanForm = document.getElementById('loan-form');
+        const formMessage = document.getElementById('form-message');
+        
+        // Sahifa yuklanganida ma'lumotlarni yuklash
+        document.addEventListener('DOMContentLoaded', loadLoans);
+        
+        // Nasiyalarni yuklash
+        async function loadLoans() {
+            try {
+                loansTable.innerHTML = '<div class="loading">Ma\'lumotlar yuklanmoqda...</div>';
+                
+                const response = await fetch(WEB_APP_URL);
+                if (!response.ok) throw new Error('Serverdan javob kelmadi');
+                
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    renderTable(data);
+                } else {
+                    loansTable.innerHTML = '<p>Nasiyalar topilmadi</p>';
+                }
+            } catch (error) {
+                console.error('Xatolik yuz berdi:', error);
+                loansTable.innerHTML = `
+                    <div class="error">
+                        <p>Ma'lumotlarni yuklashda xatolik yuz berdi</p>
+                        <p>${error.message}</p>
+                        <button onclick="loadLoans()">Qayta urinish</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Jadvalni chizish
+        function renderTable(data) {
+            if (!data || data.length === 0) {
+                loansTable.innerHTML = '<p>Ma\'lumotlar topilmadi</p>';
+                return;
+            }
+            
+            // Avtomatik ravishda sarlavhalarni olish
+            const headers = Object.keys(data[0]);
+            
+            let html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                ${headers.map(header => `<th>${formatHeader(header)}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(row => `
+                                <tr>
+                                    ${headers.map(header => `<td>${formatCell(row[header], header)}</td>`).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="table-info">Jami: ${data.length} ta nasiya</div>
+                </div>
+            `;
+            
+            loansTable.innerHTML = html;
+        }
+        
+        // Sarlavhalarni formatlash
+        function formatHeader(header) {
+            const headersMap = {
+                'id': 'ID',
+                'ism': 'Mijoz Ismi',
+                'sana': 'Sana',
+                'tur': 'Nasiya Turi',
+                'summa': 'Summa',
+                'izoh': 'Izoh'
+            };
+            return headersMap[header] || header;
+        }
+        
+        // Kataklarni formatlash
+        function formatCell(value, header) {
+            if (value === null || value === undefined) return '';
+            
+            if (header === 'sana') {
+                return new Date(value).toLocaleDateString('uz-UZ');
+            }
+            
+            if (header === 'summa') {
+                return Number(value).toLocaleString('uz-UZ') + ' so\'m';
+            }
+            
+            return value;
+        }
+        
+        // Yangi nasiya qo'shish formasi
+        function openAddForm() {
+            addForm.style.display = 'block';
+            // Joriy sanani avtomatik to'ldirish
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            document.getElementById('sana').value = formattedDate;
+            document.getElementById('ism').focus();
+            formMessage.innerHTML = '';
+        }
+        
+        function closeAddForm() {
+            addForm.style.display = 'none';
+            loanForm.reset();
+            formMessage.innerHTML = '';
+        }
+        
+        // Formani yuborish
+        loanForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const ism = document.getElementById('ism').value.trim();
+            const sana = document.getElementById('sana').value;
+            const tur = document.getElementById('tur').value;
+            const summa = document.getElementById('summa').value;
+            const izoh = document.getElementById('izoh').value.trim();
+            
+            // Validatsiya
+            if (!ism || !sana || !tur || !summa) {
+                showMessage('Barcha majburiy maydonlarni to\'ldiring!', 'error');
+                return;
+            }
+            
+            try {
+                const submitBtn = loanForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Yuborilmoqda...';
+                
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ism: ism,
+                        sana: sana,
+                        tur: tur,
+                        summa: summa,
+                        izoh: izoh
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Serverdan javob kelmadi');
+                
+                const result = await response.json();
+                
+                if (result.status === 'ok') {
+                    showMessage('Nasiya muvaffaqiyatli qo\'shildi!', 'success');
+                    setTimeout(() => {
+                        closeAddForm();
+                        loadLoans();
+                    }, 1500);
+                } else {
+                    throw new Error('Ma\'lumotlarni saqlashda xatolik');
+                }
+            } catch (error) {
+                console.error('Xatolik:', error);
+                showMessage(`Xatolik yuz berdi: ${error.message}`, 'error');
+            } finally {
+                const submitBtn = loanForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Saqlash';
+                }
+            }
+        });
+        
+        // Xabarlarni ko'rsatish
+        function showMessage(message, type) {
+            formMessage.innerHTML = `<div class="${type}">${message}</div>`;
+            formMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
