@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Nasiyalar – Grand Smart Shop</title>
   <style>
     body {
@@ -54,16 +54,39 @@
       padding-left: 0.5rem;
       border-left: 2px solid #ddd;
     }
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed; top:0; left:0;
+      width:100%; height:100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center; justify-content: center;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      width: 90%; max-width: 400px;
+    }
+    .input-group {
+      margin-bottom: 0.8rem;
+    }
+    .input-group label {
+      display: block; margin-bottom: 0.3rem;
+    }
+    .input-group input,
+    .input-group textarea,
+    .input-group select {
+      width: 100%; padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      cursor: pointer; padding: 0.5rem 1rem; border: none; border-radius: 5px;
+      background: #007bff; color: #fff;
+    }
     @media (max-width: 600px) {
-      body {
-        padding: 0.6rem;
-      }
-      .nasiya {
-        padding: 0.6rem;
-      }
-      h1 {
-        font-size: 1.2rem;
-      }
+      body { padding: 0.6rem; }
+      h1 { font-size: 1.2rem; }
     }
   </style>
 </head>
@@ -72,70 +95,74 @@
   <nav><a href="index.html">◀ Bosh sahifa</a></nav>
   <h1>Nasiyalar</h1>
   <div id="totalSum">Nasiyalar: hisoblanmoqda...</div>
- 
 
-<!-- Nasiya qo'shish tugmasi -->
-<div class="input-group">
-  <button id="addNasiyaBtn">➕ Nasiya qo‘shish</button>
-</div>
-
-<!-- Modal / Pop-up oynasi -->
-<div id="nasiyaModal" class="modal" style="display:none; position:fixed; top:0; left:0;
-     width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-  <div class="modal-content" style="background:#fff; padding:1rem; border-radius:8px; width:90%; max-width:400px;">
-    <h2>Nasiya qo‘shish</h2>
-    <form id="nasiyaForm">
-      <div class="input-group">
-        <label>Ismi</label>
-        <input type="text" id="formIsm" required />
-      </div>
-      <div class="input-group">
-        <label>Oldi (pul oldi)</label>
-        <input type="number" id="formOldi" value="0" />
-      </div>
-      <div class="input-group">
-        <label>Berdi (pul berdi)</label>
-        <input type="number" id="formBerdi" value="0" />
-      </div>
-      <div class="input-group">
-        <label>Foiz</label>
-        <select id="formFoiz">
-          <option value="0">0%</option>
-          <option value="0.5">0.5%</option>
-          <option value="1">1%</option>
-          <option value="1.5">1.5%</option>
-          <option value="2">2%</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label>Izoh</label>
-        <textarea id="formIzoh"></textarea>
-      </div>
-      <div style="text-align:right;">
-        <button type="button" id="closeModalBtn">Bekor qilish</button>
-        <button type="submit">Saqlash</button>
-      </div>
-    </form>
+  <!-- ➕ Nasiya qo'shish tugmasi -->
+  <div class="input-group" style="text-align:center; margin-bottom:1rem;">
+    <button id="addNasiyaBtn">➕ Nasiya qo‘shish</button>
   </div>
-</div>
 
-  
   <div id="nasiyaList"></div>
+
+  <!-- Modal -->
+  <div id="nasiyaModal" class="modal">
+    <div class="modal-content">
+      <h2>Nasiya qo‘shish</h2>
+      <form id="nasiyaForm">
+        <div class="input-group">
+          <label for="formIsm">Ismi</label>
+          <input type="text" id="formIsm" required />
+        </div>
+        <div class="input-group">
+          <label for="formOldi">Oldi (pul oldi)</label>
+          <input type="number" id="formOldi" value="0" />
+        </div>
+        <div class="input-group">
+          <label for="formBerdi">Berdi (pul berdi)</label>
+          <input type="number" id="formBerdi" value="0" />
+        </div>
+        <div class="input-group">
+          <label for="formFoiz">Foiz</label>
+          <select id="formFoiz">
+            <option value="0">0%</option>
+            <option value="0.5">0.5%</option>
+            <option value="1">1%</option>
+            <option value="1.5">1.5%</option>
+            <option value="2">2%</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="formIzoh">Izoh</label>
+          <textarea id="formIzoh" rows="2"></textarea>
+        </div>
+        <div style="text-align:right;">
+          <button type="button" id="closeModalBtn" style="background:#ccc; color:#000;">Bekor qilish</button>
+          <button type="submit">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="data.js"></script>
   <script>
-    // Formatlash funksiyasi
+    // 1) data.js’dagi default nasiyalar
+    const defaultNasiyalar = nasiyalar;
+
+    // 2) localStorage’dan data olish yoki defaultga qaytish
+    const stored = localStorage.getItem("nasiyalar");
+    let nasiyalarData = stored ? JSON.parse(stored) : defaultNasiyalar;
+
+    // Formatlash
     function formatSum(sum) {
       return sum.toLocaleString("uz-UZ") + " so'm";
     }
 
-    // Sahifada ro'yxatni chizish
+    // Render funksiyasi
     function renderNasiyaList() {
       const listEl = document.getElementById("nasiyaList");
       listEl.innerHTML = "";
       let total = 0;
 
-      nasiyalar.forEach(item => {
+      nasiyalarData.forEach(item => {
         // Qoldiqni hisoblash
         let qoldiq = 0;
         item.tarix.forEach(t => {
@@ -144,14 +171,16 @@
         });
         total += qoldiq;
 
-        // Element yaratish
+        // Wrapper element
         const wrapper = document.createElement("div");
         wrapper.className = "nasiya";
 
+        // Header
         const header = document.createElement("div");
         header.className = "nasiya-header";
-        header.textContent = `${item.ism}  ${formatSum(qoldiq)}`;
+        header.textContent = `${item.ism} ${formatSum(qoldiq)}`;
 
+        // Tafsilotlar
         const details = document.createElement("div");
         details.className = "tarix";
         item.tarix
@@ -162,9 +191,10 @@
             details.appendChild(p);
           });
 
-        // Bitta bosishda ochish/berkitish
+        // Toggle
         header.addEventListener("click", () => {
-          details.style.display = details.style.display === "block" ? "none" : "block";
+          details.style.display =
+            details.style.display === "block" ? "none" : "block";
         });
 
         wrapper.appendChild(header);
@@ -172,67 +202,53 @@
         listEl.appendChild(wrapper);
       });
 
-      document.getElementById("totalSum").textContent = `Nasiyalar: ${formatSum(total)}`;
+      document.getElementById("totalSum").textContent =
+        `Nasiyalar: ${formatSum(total)}`;
     }
 
-    // Sahifa yuklandida render
+    // Modal & form
+    const addBtn = document.getElementById("addNasiyaBtn");
+    const modal = document.getElementById("nasiyaModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const form = document.getElementById("nasiyaForm");
+
+    addBtn.addEventListener("click", () => modal.style.display = "flex");
+    closeModalBtn.addEventListener("click", () => modal.style.display = "none");
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const ism   = document.getElementById("formIsm").value.trim();
+      const oldi  = parseFloat(document.getElementById("formOldi").value)  || 0;
+      const berdi = parseFloat(document.getElementById("formBerdi").value) || 0;
+      const foiz  = parseFloat(document.getElementById("formFoiz").value)  || 0;
+      const izoh  = document.getElementById("formIzoh").value.trim();
+      const sana  = new Date().toLocaleString("uz-UZ", { hour12: false });
+
+      // Yangi yoki mavjud mijoz
+      let mijoz = nasiyalarData.find(n => n.ism === ism);
+      if (!mijoz) {
+        mijoz = { ism, tarix: [] };
+        nasiyalarData.push(mijoz);
+      }
+
+      // Tarixga yozish
+      if (oldi > 0) {
+        const adj = oldi + oldi * foiz / 100;
+        mijoz.tarix.push({ sana, tur: "oldi", summa: adj });
+      }
+      if (berdi > 0) {
+        mijoz.tarix.push({ sana, tur: "berdi", summa: berdi });
+      }
+
+      // Saqlash va yangilash
+      localStorage.setItem("nasiyalar", JSON.stringify(nasiyalarData));
+      renderNasiyaList();
+      modal.style.display = "none";
+      form.reset();
+    });
+
+    // Boshlanishda render
     window.addEventListener("DOMContentLoaded", renderNasiyaList);
-    // nasiya qo'shish skript
-
-// Elementlarni oling
-const addBtn = document.getElementById('addNasiyaBtn');
-const modal = document.getElementById('nasiyaModal');
-const closeModalBtn = document.getElementById('closeModalBtn');
-const form = document.getElementById('nasiyaForm');
-
-// Modalni ochish
-addBtn.addEventListener('click', () => {
-  modal.style.display = 'flex';
-});
-
-// Modalni yopish
-closeModalBtn.addEventListener('click', () => {
-  modal.style.display = 'none';
-});
-
-// Form submit
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  // Formdan qiymatlarni oling
-  const ism   = document.getElementById('formIsm').value.trim();
-  const oldi  = parseFloat(document.getElementById('formOldi').value)  || 0;
-  const berdi = parseFloat(document.getElementById('formBerdi').value) || 0;
-  const foiz  = parseFloat(document.getElementById('formFoiz').value)  || 0;
-  const izoh  = document.getElementById('formIzoh').value.trim();
-  const sana  = new Date().toLocaleString('uz-UZ', {hour12: false});
-
-  // Foizni hisoblash (faqat oldi uchun)
-  const adjustedOldi = oldi + oldi * foiz / 100;
-
-  // Qidiramiz, mavjud mijoz bormi
-  let mijoz = nasiyalar.find(n => n.ism === ism);
-  if (!mijoz) {
-    mijoz = { ism, tarix: [], qoldiq: 0 };
-    nasiyalar.push(mijoz);
-  }
-
-  // Tarixga yozamiz
-  if (oldi > 0) {
-    mijoz.tarix.push({ sana, tur: 'oldi', summa: adjustedOldi, izoh });
-  }
-  if (berdi > 0) {
-    mijoz.tarix.push({ sana, tur: 'berdi', summa: berdi, izoh });
-  }
-
-  // Sahifani yangidan chizish
-  renderNasiyaList();
-
-  // Modalni yopish va formni tozalash
-  modal.style.display = 'none';
-  form.reset();
-});
-
-    
   </script>
 </body>
 </html>
