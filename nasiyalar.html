@@ -8,90 +8,90 @@
     body {
       font-family: sans-serif;
       background: #f9f9f9;
-      margin: 0;
-      padding: 1rem;
-      max-width: 600px;
-      margin: auto;
+      margin: 0; padding: 1rem;
+      max-width: 600px; margin: auto;
     }
     nav { margin-bottom: 1rem; }
     nav a { text-decoration: none; color: #007bff; font-size: 0.9rem; }
-    h1 { font-size: 1.4rem; text-align: center; margin-bottom: 0.5rem; }
+    h1 { font-size: 1.4rem; text-align: center; margin-bottom: .5rem; }
     #totalSum { font-weight: bold; font-size: 1.1rem; text-align: center; margin-bottom: 1rem; }
+    .error { color: #b00; text-align: center; margin-bottom: .5rem; }
+    .loading { text-align: center; margin: .5rem 0; }
     .nasiya {
-      background: #fff;
-      border-radius: 8px;
-      padding: 0.8rem;
-      margin-bottom: 0.6rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background: #fff; border-radius: 8px; padding: .8rem;
+      margin-bottom: .6rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .nasiya-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      font-weight: bold;
+      display:flex; justify-content:space-between; align-items:center;
+      cursor:pointer; font-weight:bold;
+    }
+    .nasiya-actions button {
+      background:none; border:none; cursor:pointer; font-size:1rem;
+      margin-left:.5rem;
     }
     .tarix {
-      margin-top: 0.6rem;
-      display: none;
-      font-size: 0.95rem;
-      padding-left: 0.5rem;
-      border-left: 2px solid #ddd;
+      margin-top:.6rem; display:none; font-size:.95rem;
+      padding-left:.5rem; border-left:2px solid #ddd;
     }
-    .input-group { margin-bottom: 0.8rem; }
-    .input-group label { display: block; margin-bottom: 0.3rem; }
+    .input-group { margin-bottom:.8rem; }
+    .input-group label { display:block; margin-bottom:.3rem; }
     .input-group input,
     .input-group textarea,
     .input-group select {
-      width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:5px; box-sizing:border-box;
+      width:100%; padding:.5rem; border:1px solid #ccc; border-radius:5px;
+      box-sizing:border-box;
     }
-    button {
-      cursor:pointer; padding:0.5rem 1rem; border:none; border-radius:5px;
-      background:#007bff; color:#fff;
+    button.primary {
+      background:#007bff; color:#fff; border:none;
+      padding:.5rem 1rem; border-radius:5px; cursor:pointer;
     }
-    .modal {
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.5); align-items:center; justify-content:center;
-    }
-    .modal.open { display:flex; }
+    button[disabled] { opacity:.6; cursor:not-allowed; }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; }
+    .modal.open { display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); }
     .modal-content {
       background:#fff; padding:1rem; border-radius:8px;
-      width:90%; max-width:400px;
+      width:90%; max-width:400px; box-shadow:0 2px 6px rgba(0,0,0,0.2);
     }
+    .pager { text-align:center; margin:1rem 0; }
+    .pager button { margin:0 .3rem; }
     @media (max-width:600px) {
-      body { padding:0.6rem; }
+      body { padding:.6rem; }
       h1 { font-size:1.2rem; }
     }
   </style>
 </head>
-<body>
+<body role="main">
 
-  <nav><a href="index.html">◀ Bosh sahifa</a></nav>
-  <h1>Nasiyalar</h1>
-  <div id="totalSum">Nasiyalar: yuklanmoqda...</div>
+  <nav aria-label="Bosh sahifa menyusi"><a href="index.html">◀ Bosh sahifa</a></nav>
+  <h1 id="heading">Nasiyalar</h1>
+  <div id="totalSum" aria-live="polite">Nasiyalar: yuklanmoqda...</div>
+  <div id="errorMsg" class="error" role="alert" aria-hidden="true"></div>
+  <div id="loading" class="loading" aria-hidden="true">Yuklanmoqda...</div>
 
   <div class="input-group" style="text-align:center; margin-bottom:1rem;">
-    <button id="addNasiyaBtn">➕ Nasiya qo‘shish</button>
+    <button id="addNasiyaBtn" class="primary" aria-haspopup="dialog">➕ Nasiya qo‘shish</button>
   </div>
 
-  <div id="nasiyaList"></div>
+  <div id="nasiyaList" aria-label="Nasiyalar ro‘yxati"></div>
+
+  <div class="pager" id="pager"></div>
 
   <!-- Modal -->
-  <div id="nasiyaModal" class="modal">
+  <div id="nasiyaModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-content">
-      <h2>Nasiya qo‘shish</h2>
+      <h2 id="modalTitle">Nasiya qo‘shish</h2>
       <form id="nasiyaForm">
         <div class="input-group">
           <label for="formIsm">Ismi</label>
           <input type="text" id="formIsm" required />
         </div>
         <div class="input-group">
-          <label for="formOldi">Oldi (pul oldi)</label>
-          <input type="number" id="formOldi" value="0" />
+          <label for="formOldi">Oldi (0 yoki yuqoridagi son)</label>
+          <input type="number" id="formOldi" value="0" min="0" />
         </div>
         <div class="input-group">
-          <label for="formBerdi">Berdi (pul berdi)</label>
-          <input type="number" id="formBerdi" value="0" />
+          <label for="formBerdi">Berdi (0 yoki yuqoridagi son)</label>
+          <input type="number" id="formBerdi" value="0" min="0" />
         </div>
         <div class="input-group">
           <label for="formFoiz">Foiz</label>
@@ -109,7 +109,7 @@
         </div>
         <div style="text-align:right;">
           <button type="button" id="closeModalBtn" style="background:#ccc; color:#000;">Bekor qilish</button>
-          <button type="submit">Saqlash</button>
+          <button type="submit" class="primary">Saqlash</button>
         </div>
       </form>
     </div>
@@ -118,34 +118,55 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyMlhXOrF_JiY1SDC-v5TIlEsV5R3AeUkcxUrc4wlUsFrC7GVzDdVOa5vxDEQqaXinafA/exec";
     let nasiyalarData = [];
+    const pageSize = 10;
+    let currentPage = 1;
 
+    function showError(msg) {
+      const e = document.getElementById("errorMsg");
+      e.textContent = msg;
+      e.removeAttribute("aria-hidden");
+    }
+    function clearError() {
+      const e = document.getElementById("errorMsg");
+      e.textContent = "";
+      e.setAttribute("aria-hidden", "true");
+    }
+    function showLoading(on) {
+      document.getElementById("loading").style.display = on ? "" : "none";
+    }
+
+    function parseDate(s) {
+      const [d,t] = s.split(" ");
+      const [dd,mm,yy] = d.split(".").map(Number);
+      const [hh,mi] = t.split(":").map(Number);
+      return new Date(yy,mm-1,dd,hh,mi);
+    }
     function formatSum(sum) {
       return sum.toLocaleString("uz-UZ") + " so'm";
     }
 
     async function loadNasiyalar() {
+      showLoading(true); clearError();
       try {
         const res = await fetch(API_URL);
         const raw = await res.json();
         const map = {};
         raw.forEach(r => {
+          const num = parseFloat(r.summa.toString().replace(/\s+/g,""));
           if (!map[r.ism]) map[r.ism] = [];
-          map[r.ism].push({
-            sana: r.sana,
-            tur: r.tur,
-            summa: parseFloat(r.summa),
-            izoh: r.izoh
-          });
+          map[r.ism].push({ sana: r.sana, tur: r.tur, summa: num, izoh: r.izoh });
         });
-        // Saralash sanaga qarab
         nasiyalarData = Object.keys(map).map(name => ({
           ism: name,
-          tarix: map[name].sort((a,b) => new Date(a.sana) - new Date(b.sana))
+          tarix: map[name].sort((a,b)=> parseDate(a.sana)-parseDate(b.sana))
         }));
         renderNasiyaList();
-      } catch (err) {
+        renderPager();
+      } catch(err) {
         console.error(err);
-        alert('Nasiyalarni yuklashda xatolik yuz berdi.');
+        showError("Yuklashda xatolik yuz berdi");
+      } finally {
+        showLoading(false);
       }
     }
 
@@ -153,81 +174,82 @@
       const listEl = document.getElementById("nasiyaList");
       listEl.innerHTML = "";
       let total = 0;
+      const start = (currentPage-1)*pageSize;
+      const pageItems = nasiyalarData.slice(start, start+pageSize);
 
-      nasiyalarData.forEach(item => {
-        let qoldiq = 0;
-        item.tarix.forEach(t => {
-          if (t.tur === "oldi") qoldiq += t.summa;
-          else if (t.tur === "berdi") qoldiq -= t.summa;
+      pageItems.forEach(item => {
+        let q = 0;
+        item.tarix.forEach(t=> t.tur==="oldi"?q+=t.summa:q-=t.summa);
+        total+=q;
+
+        const w = document.createElement("div"); w.className="nasiya";
+        const hdr = document.createElement("div"); hdr.className="nasiya-header";
+        hdr.textContent=`${item.ism} ${formatSum(q)}`;
+
+        const acts = document.createElement("span"); acts.className="nasiya-actions";
+        ["✏️","🗑️"].forEach(icon=>{
+          const btn=document.createElement("button"); btn.textContent=icon;
+          acts.appendChild(btn);
         });
-        total += qoldiq;
+        hdr.appendChild(acts);
 
-        const wrapper = document.createElement("div");
-        wrapper.className = "nasiya";
-
-        const header = document.createElement("div");
-        header.className = "nasiya-header";
-        header.textContent = `${item.ism} ${formatSum(qoldiq)}`;
-
-        const details = document.createElement("div");
-        details.className = "tarix";
-        item.tarix
-          .filter(t => !(t.tur === "berdi" && t.summa === 0))
-          .forEach(t => {
-            const p = document.createElement("div");
-            p.textContent = `${t.sana} – ${t.tur} – ${formatSum(t.summa)}${t.izoh ? ' ("' + t.izoh + '")' : ''}`;
-            details.appendChild(p);
-          });
-
-        header.addEventListener("click", () => {
-          details.style.display = details.style.display === "block" ? "none" : "block";
+        const det=document.createElement("div"); det.className="tarix";
+        item.tarix.filter(t=>!(t.tur==="berdi"&&t.summa===0)).forEach(t=>{
+          const p=document.createElement("div");
+          p.textContent=`${t.sana} – ${t.tur} – ${formatSum(t.summa)}${t.izoh?` (“${t.izoh}”)`:''}`;
+          det.appendChild(p);
         });
 
-        wrapper.appendChild(header);
-        wrapper.appendChild(details);
-        listEl.appendChild(wrapper);
+        hdr.addEventListener("click", ()=> {
+          det.style.display=det.style.display==="block"?"none":"block";
+        });
+
+        w.append(hdr, det);
+        listEl.appendChild(w);
       });
-
-      document.getElementById("totalSum").textContent =
-        `Nasiyalar: ${formatSum(total)}`;
+      document.getElementById("totalSum").textContent = `Nasiyalar: ${formatSum(total)}`;
     }
 
-    const addBtn = document.getElementById("addNasiyaBtn");
-    const modal = document.getElementById("nasiyaModal");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-    const form = document.getElementById("nasiyaForm");
+    function renderPager() {
+      const pg = document.getElementById("pager");
+      pg.innerHTML="";
+      const pages = Math.ceil(nasiyalarData.length/pageSize);
+      for(let i=1;i<=pages;i++){
+        const b=document.createElement("button"); b.textContent=i;
+        if(i===currentPage) b.disabled=true;
+        b.addEventListener("click", ()=>{currentPage=i;renderNasiyaList();renderPager();});
+        pg.appendChild(b);
+      }
+    }
 
-    addBtn.addEventListener("click", () => modal.classList.add('open'));
-    closeModalBtn.addEventListener("click", () => modal.classList.remove('open'));
+    const addBtn=document.getElementById("addNasiyaBtn"), modal=document.getElementById("nasiyaModal"),
+          closeBtn=document.getElementById("closeModalBtn"), form=document.getElementById("nasiyaForm");
+    addBtn.addEventListener("click", ()=>modal.classList.add("open"));
+    closeBtn.addEventListener("click", ()=>modal.classList.remove("open"));
 
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
-      modal.classList.remove('open');
-      addBtn.disabled = true;
+    form.addEventListener("submit", async e=>{
+      e.preventDefault(); modal.classList.remove("open"); addBtn.disabled=true; clearError();
       try {
-        const ism   = document.getElementById("formIsm").value.trim();
-        const oldi  = parseFloat(document.getElementById("formOldi").value)  || 0;
-        const berdi = parseFloat(document.getElementById("formBerdi").value) || 0;
-        const foiz  = parseFloat(document.getElementById("formFoiz").value)  || 0;
-        const izoh  = document.getElementById("formIzoh").value.trim();
-        const sana  = new Date().toLocaleString("uz-UZ", { hour12: false });
-
-        const headers = { 'Content-Type': 'application/json' };
-
-        if (oldi > 0) {
-          const adj = oldi + oldi * foiz / 100;
-          await fetch(API_URL, { method: "POST", headers, body: JSON.stringify({ ism, sana, tur: "oldi", summa: adj, izoh }) });
+        const ism=document.getElementById("formIsm").value.trim(),
+              oldi=parseFloat(document.getElementById("formOldi").value)||0,
+              berdi=parseFloat(document.getElementById("formBerdi").value)||0,
+              foiz=parseFloat(document.getElementById("formFoiz").value)||0,
+              izoh=document.getElementById("formIzoh").value.trim(),
+              sana=new Date().toLocaleString("uz-UZ",{hour12:false});
+        const hdr={'Content-Type':'application/json'};
+        if(oldi>0){
+          const adj=oldi+oldi*foiz/100;
+          await fetch(API_URL,{method:'POST',headers:hdr,body:JSON.stringify({ism,sana,tur:'oldi',summa:adj,izoh})});
         }
-        if (berdi > 0) {
-          await fetch(API_URL, { method: "POST", headers, body: JSON.stringify({ ism, sana, tur: "berdi", summa: berdi, izoh }) });
+        if(berdi>0){
+          await fetch(API_URL,{method:'POST',headers:hdr,body:JSON.stringify({ism,sana,tur:'berdi',summa:berdi,izoh})});
         }
-
         await loadNasiyalar();
-      } catch (err) {
+      } catch(err){
         console.error(err);
-        alert('Saqlashda xatolik yuz berdi.');
+        showError("Saqlashda xatolik yuz berdi");
       } finally {
-        addBtn.disabled = false;
+        addBtn.disabled=false;
         form.reset();
       }
     });
