@@ -1,23 +1,39 @@
-const nasiyalar = [
+// data.js
+var nasiyalar = [
   {
-    ism: "Farxod",
-    tarix: [
-      { sana: "01.05.2025 12:00", tur: "oldi", summa: 5000000 },
-      { sana: "03.05.2025 10:00", tur: "berdi", summa: 4000000 }
-    ]
+    "id": 1622541600000,
+    "mijoz": "Farxod",
+    "sana": "2023-05-04T08:03:00.000Z",
+    "tur": "received",
+    "summa": 1000000,
+    "interest": 1.5,
+    "izoh": "Avto ehtiyot qismlari uchun"
   },
   {
-    ism: "Alisher",
-    tarix: [
-      { sana: "01.05.2025 08:00", tur: "oldi", summa: 3200000 },
-      { sana: "02.05.2025 18:00", tur: "berdi", summa: 5000000 }
-    ]
+    "id": 1622885760000,
+    "mijoz": "Farxod",
+    "sana": "2023-05-08T07:36:00.000Z",
+    "tur": "received",
+    "summa": 2000000,
+    "interest": 1.5,
+    "izoh": "Uy jihozlari uchun"
   },
   {
-    ism: "Sultonxo‘ja",
-    tarix: [
-      { sana: "03.05.2025 09:30", tur: "berdi", summa: 5000000 },
-      { sana: "03.05.2025 11:00", tur: "oldi", summa: 3232000 }
-    ]
+    "id": 1622541960000,
+    "mijoz": "Farxod",
+    "sana": "2023-05-04T13:06:00.000Z",
+    "tur": "paid",
+    "summa": 500000,
+    "interest": 0,
+    "izoh": "Qisman to'lov"
+  },
+  {
+    "id": 1622541600001,
+    "mijoz": "Shodmon",
+    "sana": "2023-05-10T10:15:00.000Z",
+    "tur": "received",
+    "summa": 750000,
+    "interest": 2,
+    "izoh": "Fermerlik uchun"
   }
 ];
