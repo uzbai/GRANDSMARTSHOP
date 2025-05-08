@@ -3,358 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nasiyalar ro'yxati</title>
+    <title>Nasiyalar Boshqaruvi</title>
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            color: #333;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.5rem;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        th {
-            background-color: #4CAF50;
+        button {
+            background-color: #3498db;
             color: white;
-            position: sticky;
-            top: 0;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 120px;
         }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+        button:active {
+            background-color: #2980b9;
         }
-        tr:hover {
-            background-color: #f1f1f1;
+        .debtor-list {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        .header {
+        .debtor-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .debtor-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .add-btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        .add-btn:hover {
-            background-color: #45a049;
-        }
-        #add-form {
-            display: none;
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        #add-form label {
-            display: inline-block;
-            width: 120px;
-            margin-bottom: 10px;
             font-weight: bold;
         }
-        #add-form input, #add-form textarea, #add-form select {
-            width: calc(100% - 130px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
+        .debtor-name {
+            color: #2c3e50;
         }
-        #add-form textarea {
-            height: 100px;
-            resize: vertical;
+        .debtor-total {
+            color: #e74c3c;
+        }
+        .debtor-details {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+        .transaction {
+            padding: 8px 0;
+            border-bottom: 1px solid #f9f9f9;
+            display: flex;
+            flex-direction: column;
+        }
+        .transaction-date {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        .transaction-amount {
+            font-weight: bold;
+            margin: 3px 0;
+        }
+        .transaction-amount.received {
+            color: #e74c3c;
+        }
+        .transaction-amount.paid {
+            color: #27ae60;
+        }
+        .transaction-comment {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+        .add-loan-form {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
         }
         .form-actions {
+            display: flex;
+            gap: 10px;
             margin-top: 20px;
-            text-align: right;
         }
         .form-actions button {
-            padding: 10px 20px;
-            margin-left: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .save-btn {
-            background-color: #4CAF50;
-            color: white;
+            flex: 1;
         }
         .cancel-btn {
-            background-color: #f44336;
-            color: white;
+            background-color: #95a5a6;
         }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
-            color: #555;
-        }
-        .error {
-            color: #f44336;
-            margin-top: 10px;
-        }
-        .success {
-            color: #4CAF50;
-            margin-top: 10px;
-        }
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
+        @media (min-width: 768px) {
+            body {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
             }
-            .add-btn {
-                margin-top: 10px;
-                width: 100%;
-            }
-            #add-form input, #add-form textarea, #add-form select {
-                width: 100%;
+            h1 {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Nasiyalar ro'yxati</h1>
-        <button class="add-btn" onclick="openAddForm()">
-            <i class="fas fa-plus"></i> Yangi nasiya qo'shish
-        </button>
+    <h1>Nasiyalar Boshqaruvi</h1>
+    
+    <div class="controls">
+        <button onclick="exportToExcel()">Excelga Yuklab Olish</button>
+        <button onclick="showAddForm()">Yangi Nasiya Qo'shish</button>
     </div>
     
-    <div id="loans-table" class="loading">
-        Ma'lumotlar yuklanmoqda...
+    <div class="debtor-list" id="debtorList">
+        <!-- Qarzdorlar ro'yxati shu yerga yuklanadi -->
     </div>
 
-    <div id="add-form">
-        <h2>Yangi nasiya qo'shish</h2>
-        <form id="loan-form">
-            <label for="ism">Mijoz Ismi:</label>
-            <input type="text" id="ism" name="ism" required placeholder="Mijozning to'liq ismi"><br>
-            
-            <label for="sana">Sana:</label>
-            <input type="date" id="sana" name="sana" required><br>
-            
-            <label for="tur">Nasiya turi:</label>
-            <select id="tur" name="tur" required>
-                <option value="">Tanlang</option>
-                <option value="Mahsulot">Mahsulot</option>
-                <option value="Xizmat">Xizmat</option>
-                <option value="Qarz">Qarz</option>
-                <option value="Boshqa">Boshqa</option>
-            </select><br>
-            
-            <label for="summa">Summa (so'm):</label>
-            <input type="number" id="summa" name="summa" required placeholder="0000000"><br>
-            
-            <label for="izoh">Qo'shimcha izoh:</label>
-            <textarea id="izoh" name="izoh" placeholder="Qo'shimcha ma'lumotlar..."></textarea><br>
-            
-            <div class="form-actions">
-                <button type="button" class="cancel-btn" onclick="closeAddForm()">Bekor qilish</button>
-                <button type="submit" class="save-btn">Saqlash</button>
-            </div>
-        </form>
-        <div id="form-message"></div>
+    <!-- Yangi nasiya qo'shish formasi -->
+    <div class="add-loan-form" id="addLoanForm">
+        <div class="form-container">
+            <h2>Yangi Nasiya</h2>
+            <form id="loanForm">
+                <div class="form-group">
+                    <label for="clientName">Mijoz Ismi:</label>
+                    <input type="text" id="clientName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">Summa (so'm):</label>
+                    <input type="number" id="amount" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="interest">Qarz foizi:</label>
+                    <select id="interest" required>
+                        <option value="0">0%</option>
+                        <option value="0.5">0.5%</option>
+                        <option value="1">1%</option>
+                        <option value="1.5">1.5%</option>
+                        <option value="2">2%</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="transactionType">Turi:</label>
+                    <select id="transactionType" required>
+                        <option value="received">Qarz oldi</option>
+                        <option value="paid">Qarz qaytardi</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="comment">Izoh:</label>
+                    <textarea id="comment" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="hideAddForm()">Bekor qilish</button>
+                    <button type="submit">Saqlash</button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- data.js ni ulash -->
+    <script src="data.js"></script>
+    
     <script>
-        // Web App URL
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxMgC8ce1FbV0UjXU6TSlNcRTYyfq3MzQsvqSfGFt-USbn6LeuAWEAHWpmeV3TQgsvrWA/exec';
-        
-        // DOM elementlari
-        const loansTable = document.getElementById('loans-table');
-        const addForm = document.getElementById('add-form');
-        const loanForm = document.getElementById('loan-form');
-        const formMessage = document.getElementById('form-message');
-        
-        // Sahifa yuklanganida ma'lumotlarni yuklash
-        document.addEventListener('DOMContentLoaded', loadLoans);
-        
-        // Nasiyalarni yuklash
-        async function loadLoans() {
-            try {
-                loansTable.innerHTML = '<div class="loading">Ma\'lumotlar yuklanmoqda...</div>';
-                
-                const response = await fetch(WEB_APP_URL);
-                if (!response.ok) throw new Error('Serverdan javob kelmadi');
-                
-                const data = await response.json();
-                
-                if (data && data.length > 0) {
-                    renderTable(data);
-                } else {
-                    loansTable.innerHTML = '<p>Nasiyalar topilmadi</p>';
+        // Sahifa yuklanganda ma'lumotlarni ko'rsatish
+        document.addEventListener('DOMContentLoaded', function() {
+            renderDebtors();
+        });
+
+        // Formani yuborish
+        document.getElementById('loanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addNewLoan();
+        });
+
+        // Qarzdorlarni ko'rsatish
+        function renderDebtors() {
+            const debtorList = document.getElementById('debtorList');
+            debtorList.innerHTML = '';
+            
+            // Qarzdorlarni guruhlash
+            const debtorsMap = {};
+            
+            nasiyalar.forEach(transaction => {
+                if (!debtorsMap[transaction.mijoz]) {
+                    debtorsMap[transaction.mijoz] = [];
                 }
-            } catch (error) {
-                console.error('Xatolik yuz berdi:', error);
-                loansTable.innerHTML = `
-                    <div class="error">
-                        <p>Ma'lumotlarni yuklashda xatolik yuz berdi</p>
-                        <p>${error.message}</p>
-                        <button onclick="loadLoans()">Qayta urinish</button>
+                debtorsMap[transaction.mijoz].push(transaction);
+            });
+            
+            // Har bir qarzdor uchun yaratish
+            for (const [name, transactions] of Object.entries(debtorsMap)) {
+                const totalDebt = calculateTotalDebt(transactions);
+                
+                const debtorItem = document.createElement('div');
+                debtorItem.className = 'debtor-item';
+                debtorItem.innerHTML = `
+                    <div class="debtor-header" onclick="toggleDetails(this)">
+                        <span class="debtor-name">${name}</span>
+                        <span class="debtor-total">${formatNumber(totalDebt)} so'm</span>
+                    </div>
+                    <div class="debtor-details">
+                        ${renderTransactions(transactions)}
                     </div>
                 `;
+                debtorList.appendChild(debtorItem);
             }
         }
         
-        // Jadvalni chizish
-        function renderTable(data) {
-            if (!data || data.length === 0) {
-                loansTable.innerHTML = '<p>Ma\'lumotlar topilmadi</p>';
-                return;
-            }
-            
-            // Avtomatik ravishda sarlavhalarni olish
-            const headers = Object.keys(data[0]);
-            
-            let html = `
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                ${headers.map(header => `<th>${formatHeader(header)}</th>`).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.map(row => `
-                                <tr>
-                                    ${headers.map(header => `<td>${formatCell(row[header], header)}</td>`).join('')}
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    <div class="table-info">Jami: ${data.length} ta nasiya</div>
-                </div>
-            `;
-            
-            loansTable.innerHTML = html;
-        }
-        
-        // Sarlavhalarni formatlash
-        function formatHeader(header) {
-            const headersMap = {
-                'id': 'ID',
-                'ism': 'Mijoz Ismi',
-                'sana': 'Sana',
-                'tur': 'Nasiya Turi',
-                'summa': 'Summa',
-                'izoh': 'Izoh'
-            };
-            return headersMap[header] || header;
-        }
-        
-        // Kataklarni formatlash
-        function formatCell(value, header) {
-            if (value === null || value === undefined) return '';
-            
-            if (header === 'sana') {
-                return new Date(value).toLocaleDateString('uz-UZ');
-            }
-            
-            if (header === 'summa') {
-                return Number(value).toLocaleString('uz-UZ') + ' so\'m';
-            }
-            
-            return value;
-        }
-        
-        // Yangi nasiya qo'shish formasi
-        function openAddForm() {
-            addForm.style.display = 'block';
-            // Joriy sanani avtomatik to'ldirish
-            const today = new Date();
-            const formattedDate = today.toISOString().substr(0, 10);
-            document.getElementById('sana').value = formattedDate;
-            document.getElementById('ism').focus();
-            formMessage.innerHTML = '';
-        }
-        
-        function closeAddForm() {
-            addForm.style.display = 'none';
-            loanForm.reset();
-            formMessage.innerHTML = '';
-        }
-        
-        // Formani yuborish
-        loanForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const ism = document.getElementById('ism').value.trim();
-            const sana = document.getElementById('sana').value;
-            const tur = document.getElementById('tur').value;
-            const summa = document.getElementById('summa').value;
-            const izoh = document.getElementById('izoh').value.trim();
-            
-            // Validatsiya
-            if (!ism || !sana || !tur || !summa) {
-                showMessage('Barcha majburiy maydonlarni to\'ldiring!', 'error');
-                return;
-            }
-            
-            try {
-                const submitBtn = loanForm.querySelector('button[type="submit"]');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Yuborilmoqda...';
-                
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        ism: ism,
-                        sana: sana,
-                        tur: tur,
-                        summa: summa,
-                        izoh: izoh
-                    })
-                });
-                
-                if (!response.ok) throw new Error('Serverdan javob kelmadi');
-                
-                const result = await response.json();
-                
-                if (result.status === 'ok') {
-                    showMessage('Nasiya muvaffaqiyatli qo\'shildi!', 'success');
-                    setTimeout(() => {
-                        closeAddForm();
-                        loadLoans();
-                    }, 1500);
+        // Qarzdorning umumiy qarzini hisoblash
+        function calculateTotalDebt(transactions) {
+            return transactions.reduce((total, t) => {
+                if (t.tur === 'received') {
+                    return total + t.summa;
                 } else {
-                    throw new Error('Ma\'lumotlarni saqlashda xatolik');
+                    return total - t.summa;
                 }
-            } catch (error) {
-                console.error('Xatolik:', error);
-                showMessage(`Xatolik yuz berdi: ${error.message}`, 'error');
-            } finally {
-                const submitBtn = loanForm.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Saqlash';
-                }
-            }
-        });
+            }, 0);
+        }
         
-        // Xabarlarni ko'rsatish
-        function showMessage(message, type) {
-            formMessage.innerHTML = `<div class="${type}">${message}</div>`;
-            formMessage.scrollIntoView({ behavior: 'smooth' });
+        // Tranzaksiyalarni ko'rsatish
+        function renderTransactions(transactions) {
+            // Sana bo'yicha tartiblash (eng yangisi birinchi)
+            transactions.sort((a, b) => new Date(b.sana) - new Date(a.sana));
+            
+            return transactions.map(t => `
+                <div class="transaction">
+                    <div class="transaction-date">${formatDate(t.sana)}</div>
+                    <div class="transaction-amount ${t.tur}">
+                        ${t.tur === 'received' ? '+' : '-'} ${formatNumber(t.summa)} so'm
+                        ${t.interest > 0 ? ` (${t.interest}%)` : ''}
+                    </div>
+                    ${t.izoh ? `<div class="transaction-comment">${t.izoh}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Detallarni ko'rsatish/yashirish
+        function toggleDetails(header) {
+            const details = header.nextElementSibling;
+            details.style.display = details.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // Excelga eksport qilish
+        function exportToExcel() {
+            let csv = 'Mijoz,Sana,Turi,Summa,Foiz,Izoh\n';
+            
+            nasiyalar.forEach(t => {
+                csv += `"${t.mijoz}","${formatDate(t.sana)}","${t.tur === 'received' ? 'Qarz oldi' : 'Qarz qaytardi'}","${t.summa}","${t.interest}%","${t.izoh || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'nasiyalar_' + new Date().toISOString().slice(0,10) + '.csv';
+            link.click();
+        }
+        
+        // Formani ko'rsatish
+        function showAddForm() {
+            document.getElementById('addLoanForm').style.display = 'block';
+            document.getElementById('clientName').focus();
+        }
+        
+        // Formani yopish
+        function hideAddForm() {
+            document.getElementById('addLoanForm').style.display = 'none';
+            document.getElementById('loanForm').reset();
+        }
+        
+        // Yangi nasiya qo'shish
+        function addNewLoan() {
+            const clientName = document.getElementById('clientName').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const interest = parseFloat(document.getElementById('interest').value);
+            const transactionType = document.getElementById('transactionType').value;
+            const comment = document.getElementById('comment').value.trim();
+            
+            if (!clientName || isNaN(amount) || amount <= 0) {
+                alert('Iltimos, maydonlarni to\'g\'ri to\'ldiring!');
+                return;
+            }
+            
+            const newTransaction = {
+                id: Date.now(),
+                mijoz: clientName,
+                sana: new Date().toISOString(),
+                tur: transactionType,
+                summa: amount,
+                interest: interest,
+                izoh: comment
+            };
+            
+            nasiyalar.push(newTransaction);
+            updateDataFile();
+            renderDebtors();
+            hideAddForm();
+        }
+        
+        // data.js ni yangilash
+        function updateDataFile() {
+            const dataStr = "var nasiyalar = " + JSON.stringify(nasiyalar, null, 2) + ";";
+            const blob = new Blob([dataStr], { type: 'text/javascript' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'data.js';
+            link.click();
+        }
+        
+        // Sana formatlash
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${day}.${month}.${year} ${hours}:${minutes} da`;
+        }
+        
+        // Raqam formatlash (1 000 000)
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
         }
     </script>
 </body>
