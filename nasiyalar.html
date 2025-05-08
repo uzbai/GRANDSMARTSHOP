@@ -1,13 +1,217 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <!-- Avvalgidek style va meta teglar -->
-    <!-- ... -->
+   <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nasiyalar Boshqaruvi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 120px;
+        }
+        button:active {
+            background-color: #2980b9;
+        }
+        .debtor-list {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .debtor-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .debtor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .debtor-name {
+            color: #2c3e50;
+        }
+        .debtor-total {
+            color: #e74c3c;
+        }
+        .debtor-details {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+        .transaction {
+            padding: 8px 0;
+            border-bottom: 1px solid #f9f9f9;
+            display: flex;
+            flex-direction: column;
+        }
+        .transaction-date {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        .transaction-amount {
+            font-weight: bold;
+            margin: 3px 0;
+        }
+        .transaction-amount.received {
+            color: #e74c3c;
+        }
+        .transaction-amount.paid {
+            color: #27ae60;
+        }
+        .transaction-comment {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+        .add-loan-form {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .form-actions button {
+            flex: 1;
+        }
+        .cancel-btn {
+            background-color: #95a5a6;
+        }
+        @media (min-width: 768px) {
+            body {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Avvalgidek HTML qismi -->
-    <!-- ... -->
+   <h1>Nasiyalar Boshqaruvi</h1>
+    
+    <div class="controls">
+        <button onclick="exportToExcel()">Excelga Yuklab Olish</button>
+        <button onclick="showAddForm()">Yangi Nasiya Qo'shish</button>
+    </div>
+    
+    <div class="debtor-list" id="debtorList">
+        <!-- Qarzdorlar ro'yxati shu yerga yuklanadi -->
+    </div>
 
+    <!-- Yangi nasiya qo'shish formasi -->
+    <div class="add-loan-form" id="addLoanForm">
+        <div class="form-container">
+            <h2>Yangi Nasiya</h2>
+            <form id="loanForm">
+                <div class="form-group">
+                    <label for="clientName">Mijoz Ismi:</label>
+                    <input type="text" id="clientName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">Summa (so'm):</label>
+                    <input type="number" id="amount" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="interest">Qarz foizi:</label>
+                    <select id="interest" required>
+                        <option value="0">0%</option>
+                        <option value="0.5">0.5%</option>
+                        <option value="1">1%</option>
+                        <option value="1.5">1.5%</option>
+                        <option value="2">2%</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="transactionType">Turi:</label>
+                    <select id="transactionType" required>
+                        <option value="received">Qarz oldi</option>
+                        <option value="paid">Qarz qaytardi</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="comment">Izoh:</label>
+                    <textarea id="comment" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="hideAddForm()">Bekor qilish</button>
+                    <button type="submit">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- data.js ni ulash -->
+    <script src="data.js"></script>
     <script>
         // GitHub API sozlamalari
         const GITHUB_USER = '@uzbai';
