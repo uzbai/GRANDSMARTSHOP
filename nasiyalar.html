@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-   <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nasiyalar Boshqaruvi</title>
     <style>
@@ -152,7 +152,7 @@
     </style>
 </head>
 <body>
-   <h1>Nasiyalar Boshqaruvi</h1>
+    <h1>Nasiyalar Boshqaruvi</h1>
     
     <div class="controls">
         <button onclick="exportToExcel()">Excelga Yuklab Olish</button>
@@ -212,89 +212,116 @@
 
     <!-- data.js ni ulash -->
     <script src="data.js"></script>
+    
     <script>
-        // GitHub API sozlamalari
-        const GITHUB_USER = '@uzbai';
-        const GITHUB_REPO = 'nasiyalar-db';
-        const GITHUB_TOKEN = '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'; // GitHub > Settings > Developer settings > Personal access tokens
-        const DATA_FILE = 'data.json';
-        const DATA_URL = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${DATA_FILE}`;
+        // Sahifa yuklanganda ma'lumotlarni ko'rsatish
+        document.addEventListener('DOMContentLoaded', function() {
+            renderDebtors();
+        });
 
-        // Ma'lumotlarni yuklash
-        async function loadLoans() {
-            try {
-                const response = await fetch(DATA_URL, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
+        // Formani yuborish
+        document.getElementById('loanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addNewLoan();
+        });
+
+        // Qarzdorlarni ko'rsatish
+        function renderDebtors() {
+            const debtorList = document.getElementById('debtorList');
+            debtorList.innerHTML = '';
+            
+            // Qarzdorlarni guruhlash
+            const debtorsMap = {};
+            
+            nasiyalar.forEach(transaction => {
+                if (!debtorsMap[transaction.mijoz]) {
+                    debtorsMap[transaction.mijoz] = [];
+                }
+                debtorsMap[transaction.mijoz].push(transaction);
+            });
+            
+            // Har bir qarzdor uchun yaratish
+            for (const [name, transactions] of Object.entries(debtorsMap)) {
+                const totalDebt = calculateTotalDebt(transactions);
                 
-                if (!response.ok) throw new Error('Ma\'lumotlarni yuklab bo\'lmadi');
-                
-                const data = await response.json();
-                const content = JSON.parse(atob(data.content));
-                nasiyalar = content;
-                
-                renderDebtors();
-            } catch (error) {
-                console.error('Xatolik:', error);
-                loansTable.innerHTML = `
-                    <div class="error">
-                        <p>Ma'lumotlarni yuklashda xatolik</p>
-                        <p>${error.message}</p>
-                        <button onclick="loadLoans()">Qayta urinish</button>
+                const debtorItem = document.createElement('div');
+                debtorItem.className = 'debtor-item';
+                debtorItem.innerHTML = `
+                    <div class="debtor-header" onclick="toggleDetails(this)">
+                        <span class="debtor-name">${name}</span>
+                        <span class="debtor-total">${formatNumber(totalDebt)} so'm</span>
+                    </div>
+                    <div class="debtor-details">
+                        ${renderTransactions(transactions)}
                     </div>
                 `;
+                debtorList.appendChild(debtorItem);
             }
         }
-
-        // Ma'lumotlarni yangilash
-        async function updateLoans() {
-            try {
-                // Avval mavjud fayl ma'lumotlarini olamiz
-                const currentData = await fetch(DATA_URL, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (!currentData.ok) throw new Error('Faylni yangilab bo\'lmadi');
-                
-                const fileInfo = await currentData.json();
-                
-                // Yangi content tayyorlaymiz
-                const newContent = JSON.stringify(nasiyalar, null, 2);
-                const updateResponse = await fetch(DATA_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Yangilash: ${new Date().toLocaleString()}`,
-                        content: btoa(unescape(encodeURIComponent(newContent))),
-                        sha: fileInfo.sha
-                    })
-                });
-                
-                if (!updateResponse.ok) {
-                    const errorData = await updateResponse.json();
-                    throw new Error(errorData.message || 'Ma\'lumotlarni yangilab bo\'lmadi');
+        
+        // Qarzdorning umumiy qarzini hisoblash
+        function calculateTotalDebt(transactions) {
+            return transactions.reduce((total, t) => {
+                if (t.tur === 'received') {
+                    return total + t.summa;
+                } else {
+                    return total - t.summa;
                 }
-                
-                return true;
-            } catch (error) {
-                console.error('Yangilash xatosi:', error);
-                alert(`Xatolik: ${error.message}`);
-                return false;
-            }
+            }, 0);
         }
-
-        // Yangi nasiya qo'shish (o'zgartirilgan)
-        async function addNewLoan() {
+        
+        // Tranzaksiyalarni ko'rsatish
+        function renderTransactions(transactions) {
+            // Sana bo'yicha tartiblash (eng yangisi birinchi)
+            transactions.sort((a, b) => new Date(b.sana) - new Date(a.sana));
+            
+            return transactions.map(t => `
+                <div class="transaction">
+                    <div class="transaction-date">${formatDate(t.sana)}</div>
+                    <div class="transaction-amount ${t.tur}">
+                        ${t.tur === 'received' ? '+' : '-'} ${formatNumber(t.summa)} so'm
+                        ${t.interest > 0 ? ` (${t.interest}%)` : ''}
+                    </div>
+                    ${t.izoh ? `<div class="transaction-comment">${t.izoh}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Detallarni ko'rsatish/yashirish
+        function toggleDetails(header) {
+            const details = header.nextElementSibling;
+            details.style.display = details.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // Excelga eksport qilish
+        function exportToExcel() {
+            let csv = 'Mijoz,Sana,Turi,Summa,Foiz,Izoh\n';
+            
+            nasiyalar.forEach(t => {
+                csv += `"${t.mijoz}","${formatDate(t.sana)}","${t.tur === 'received' ? 'Qarz oldi' : 'Qarz qaytardi'}","${t.summa}","${t.interest}%","${t.izoh || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'nasiyalar_' + new Date().toISOString().slice(0,10) + '.csv';
+            link.click();
+        }
+        
+        // Formani ko'rsatish
+        function showAddForm() {
+            document.getElementById('addLoanForm').style.display = 'block';
+            document.getElementById('clientName').focus();
+        }
+        
+        // Formani yopish
+        function hideAddForm() {
+            document.getElementById('addLoanForm').style.display = 'none';
+            document.getElementById('loanForm').reset();
+        }
+        
+        // Yangi nasiya qo'shish
+        function addNewLoan() {
             const clientName = document.getElementById('clientName').value.trim();
             const amount = parseFloat(document.getElementById('amount').value);
             const interest = parseFloat(document.getElementById('interest').value);
@@ -306,9 +333,6 @@
                 return;
             }
             
-            const interestAmount = (amount * interest) / 100;
-            const totalAmount = amount + interestAmount;
-            
             const newTransaction = {
                 id: Date.now(),
                 mijoz: clientName,
@@ -316,26 +340,40 @@
                 tur: transactionType,
                 summa: amount,
                 interest: interest,
-                interestAmount: interestAmount,
-                totalAmount: totalAmount,
                 izoh: comment
             };
             
             nasiyalar.push(newTransaction);
-            
-            // GitHubga yangilashni yuborish
-            const success = await updateLoans();
-            
-            if (success) {
-                renderDebtors();
-                hideAddForm();
-            }
+            updateDataFile();
+            renderDebtors();
+            hideAddForm();
         }
-
-        // Sahifa yuklanganda ma'lumotlarni yuklash
-        document.addEventListener('DOMContentLoaded', loadLoans);
         
-        // Qolgan funksiyalar avvalgidek...
+        // data.js ni yangilash
+        function updateDataFile() {
+            const dataStr = "var nasiyalar = " + JSON.stringify(nasiyalar, null, 2) + ";";
+            const blob = new Blob([dataStr], { type: 'text/javascript' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'data.js';
+            link.click();
+        }
+        
+        // Sana formatlash
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${day}.${month}.${year} ${hours}:${minutes} da`;
+        }
+        
+        // Raqam formatlash (1 000 000)
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
     </script>
 </body>
 </html>
